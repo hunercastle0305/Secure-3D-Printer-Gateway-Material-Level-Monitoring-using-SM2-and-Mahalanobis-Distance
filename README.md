@@ -1,5 +1,3 @@
-# Secure-3D-Printer-Gateway-Material-Level-Monitoring-using-SM2-and-Mahalanobis-Distance
-工业级 3D 打印机安全网关 / A secure IoT gateway for 3D printers. Uses the SM2 cryptographic algorithm for secure data transmission and Mahalanobis Distance for AI-driven material level anomaly detection.
 # 🛡️ ResinGuard: 基于树莓派与国密 SM2 的 3D 打印机液面安全监测系统
 
 这是一个面向 SLA 3D 打印工业场景的物联网安全网关与实时监控系统。本项目基于树莓派构建边缘计算网关，通过工业传感器采集树脂槽液面数据，使用国密 SM2 算法进行端到端加密传输，并在云端引入马氏距离算法，实现高精度的设备漏液与异常消耗隐性故障检测。
