@@ -1,0 +1,14 @@
+from gmssl import sm2
+
+# 经过验证的一对匹配密钥 (130位公钥 + 64位私钥)
+PRIVATE_KEY = 'X'
+PUBLIC_KEY = 'X'
+def encrypt_data(plain_text):
+    # 显式指定 mode=1 (即 C1C3C2 模式)
+    sm2_crypt = sm2.CryptSM2(public_key=PUBLIC_KEY, private_key=PRIVATE_KEY, mode=1)
+    
+    raw_bytes = plain_text.encode('utf-8')
+    # 执行加密。由于公钥是 130 位，库会自动处理 04 前缀
+    encrypted_bytes = sm2_crypt.encrypt(raw_bytes)
+    
+    return encrypted_bytes.hex()

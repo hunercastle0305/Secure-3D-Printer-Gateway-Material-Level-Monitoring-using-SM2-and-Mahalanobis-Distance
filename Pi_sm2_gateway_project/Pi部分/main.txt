@@ -1,0 +1,65 @@
+import time
+import json
+import random
+import paho.mqtt.client as mqtt
+from sm2_crypto import encrypt_data
+
+# --- 配置信息 ---
+MQTT_BROKER = "test.mosquitto.org"
+MQTT_PORT = 1883
+# 请确保这里的主题与 PC 端一致
+MQTT_TOPIC ="X"
+
+# 适配 MQTT 2.0 的回调函数
+def on_connect(client, userdata, flags, reason_code, properties):
+    if reason_code == 0:
+        print(">>> 状态: 网关已成功连接 MQTT 代理")
+    else:
+        print(f">>> 错误: 连接失败，返回码 {reason_code}")
+
+# 初始化客户端
+client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
+client.on_connect = on_connect
+client.connect(MQTT_BROKER, MQTT_PORT, 60)
+
+# 开启后台循环（用于处理底层网络收发和心跳保活）
+client.loop_start()
+
+def run_gateway():
+    print("=== 基于树莓派的加密网关已启动 ===")
+    print("按 Ctrl+C 可以随时安全停止数据采集...\n")
+    
+    try:
+        while True:
+            # 1. 模拟数据采集
+            distance = round(random.uniform(10.0, 50.0), 2)
+            
+            # 2. 协议转换：封装为 JSON 格式
+            payload = {
+                "gw_id": "Gateway_RPi5",
+                "distance": distance,
+                "timestamp": int(time.time())
+            }
+            json_str = json.dumps(payload)
+            print(f"[采集] 明文: {json_str}")
+            
+            # 3. SM2 加密
+            encrypted_hex = encrypt_data(json_str)
+            
+            # 4. MQTT 发布
+            client.publish(MQTT_TOPIC, encrypted_hex)
+            print(f">>> [发送成功] 密文: {encrypted_hex[:20]}...")
+            print("-" * 40)
+            
+            time.sleep(5) # 每 5 秒循环一次
+            
+    except KeyboardInterrupt:
+        # 当你在终端按下 Ctrl+C 时，会跳转到这里执行
+        print("\n\n?? 收到停止指令 (Ctrl+C)！")
+        print(">>> 正在断开云端连接...")
+        client.loop_stop()    # 停止后台网络循环
+        client.disconnect()   # 断开 MQTT 连接
+        print(">>> 网关已安全停止运行。下班啦！")
+
+if __name__ == "__main__":
+    run_gateway()
